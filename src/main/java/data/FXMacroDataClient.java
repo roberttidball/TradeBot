@@ -40,24 +40,34 @@ public class FXMacroDataClient {
     public String pressReleases(String currency) throws IOException { return get("/press-releases/" + norm(currency)); }
     public String centralBankers(String currency) throws IOException { return get("/central_bankers/" + norm(currency)); }
 
-    private String get(String path) throws IOException {
-        HttpURLConnection connection = (HttpURLConnection) URI.create(buildUrl(path)).toURL().openConnection();
-        connection.setRequestMethod("GET");
-        connection.setConnectTimeout(10000);
-        connection.setReadTimeout(20000);
-        int status = connection.getResponseCode();
-        if (status < 200 || status >= 300) throw new IOException("FXMacroData returned HTTP " + status);
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
-            StringBuilder body = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) body.append(line);
-            return body.toString();
-        }
-    }
 
-    String buildUrl(String path) throws IOException {
-        if (apiKey.isEmpty()) return baseUrl + path;
-        return baseUrl + path + "?api_key=" + URLEncoder.encode(apiKey, StandardCharsets.UTF_8.name());
+ private String get(String path) throws Exception {
+        HttpsURLConnection connection = null;
+        try {
+            connection = (HttpsURLConnection) URI.create(buildUrl(path)).toURL().openConnection();
+            connection.setRequestMethod("GET");
+            connection.setConnectTimeout(10000);
+            connection.setReadTimeout(20000);
+            
+            int status = connection.getResponseCode();
+            if (status != 200 ) {
+                System.out.println("client connected to the stream " + status);
+                throw new IOException("FX Macro Data return " + status);
+            }
+            
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
+                StringBuilder body = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    body.append(line);
+                }
+                return body.toString();
+            }
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
     }
 
     private static String norm(String value) {
