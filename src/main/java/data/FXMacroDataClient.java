@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
@@ -45,6 +44,7 @@ public class FXMacroDataClient {
         connection.setRequestMethod("GET");
         connection.setConnectTimeout(10000);
         connection.setReadTimeout(20000);
+        if (!apiKey.isEmpty()) connection.setRequestProperty("X-API-Key", apiKey);
         int status = connection.getResponseCode();
         if (status < 200 || status >= 300) throw new IOException("FXMacroData returned HTTP " + status);
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8))) {
@@ -55,9 +55,8 @@ public class FXMacroDataClient {
         }
     }
 
-    String buildUrl(String path) throws IOException {
-        if (apiKey.isEmpty()) return baseUrl + path;
-        return baseUrl + path + "?api_key=" + URLEncoder.encode(apiKey, StandardCharsets.UTF_8.name());
+    String buildUrl(String path) {
+        return baseUrl + path;
     }
 
     private static String norm(String value) {
