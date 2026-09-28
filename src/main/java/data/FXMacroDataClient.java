@@ -37,7 +37,6 @@ public class FXMacroDataClient {
     public String riskSentiment() throws IOException { return get("/risk_sentiment"); }
     public String news(String currency) throws IOException { return get("/news/" + norm(currency)); }
     public String pressReleases(String currency) throws IOException { return get("/press-releases/" + norm(currency)); }
-    public String centralBankers(String currency) throws IOException { return get("/central_bankers/" + norm(currency)); }
 
     // List endpoints return 20 rows by default and at most 100 per request, newest first.
     // Pass limit/offset and follow pagination.next_offset while pagination.has_more is true.
