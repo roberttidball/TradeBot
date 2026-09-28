@@ -39,6 +39,14 @@ public class FXMacroDataClient {
     public String pressReleases(String currency) throws IOException { return get("/press-releases/" + norm(currency)); }
     public String centralBankers(String currency) throws IOException { return get("/central_bankers/" + norm(currency)); }
 
+    // List endpoints return 20 rows by default and at most 100 per request, newest first.
+    // Pass limit/offset and follow pagination.next_offset while pagination.has_more is true.
+    public String announcements(String currency, String indicator, int limit, int offset) throws IOException { return get("/announcements/" + norm(currency) + "/" + indicator + page(limit, offset)); }
+    public String predictions(String currency, String indicator, int limit, int offset) throws IOException { return get("/predictions/" + norm(currency) + "/" + indicator + page(limit, offset)); }
+    public String forex(String base, String quote, int limit, int offset) throws IOException { return get("/forex/" + norm(base) + "/" + norm(quote) + page(limit, offset)); }
+    public String cot(String currency, int limit, int offset) throws IOException { return get("/cot/" + norm(currency) + page(limit, offset)); }
+    public String commodity(String indicator, int limit, int offset) throws IOException { return get("/commodities/" + indicator + page(limit, offset)); }
+
     private String get(String path) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) URI.create(buildUrl(path)).toURL().openConnection();
         connection.setRequestMethod("GET");
@@ -57,6 +65,10 @@ public class FXMacroDataClient {
 
     String buildUrl(String path) {
         return baseUrl + path;
+    }
+
+    static String page(int limit, int offset) {
+        return "?limit=" + Math.max(1, Math.min(limit, 100)) + "&offset=" + Math.max(0, offset);
     }
 
     private static String norm(String value) {
